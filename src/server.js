@@ -3,6 +3,7 @@ const nunjucks = require("nunjucks");
 
 const server = express();
 
+// Dados
 const proffys = [
   {
     name: "Pedro Barão",
@@ -32,17 +33,45 @@ const subjects = [
   "Química",
 ];
 
+const weekdays = [
+  "Domingo",
+  "Segunda-feira",
+  "Terça-feira",
+  "Quarta-feira",
+  "Quinta-feira",
+  "Sexta-feira",
+  "Sábado",
+];
+
+// Funcionalidades
+function getSubject(subjectNumber) {
+  const position = +subjectNumber - 1;
+  return subjects[position];
+}
+
 function pageLanding(req, res) {
   return res.render("index.html");
 }
 
 function pageStudy(req, res) {
   const filters = req.query;
-  return res.render("study.html", { proffys, filters });
+  return res.render("study.html", { proffys, filters, subjects, weekdays });
 }
 
 function pageGiveClasses(req, res) {
-  return res.render("give-classes.html");
+  const data = req.query;
+  const isNotEmpty = Object.keys(data).length > 0;
+
+  // Add data to proffys array (if there is data)
+  if (isNotEmpty) {
+    data.subject = getSubject(data.subject);
+
+    proffys.push(data);
+    return res.redirect("/study");
+  }
+
+  // If there is no data, show page give-classes
+  return res.render("give-classes.html", { subjects, weekdays });
 }
 
 // Nunjucks config
@@ -59,4 +88,5 @@ server
   .get("/study", pageStudy)
   .get("/give-classes", pageGiveClasses)
 
+  // Server start
   .listen(5500);
